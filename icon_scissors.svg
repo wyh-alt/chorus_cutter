@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bladeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2980b9;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="handleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#95a5a6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7f8c8d;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="60" fill="#ecf0f1" stroke="#bdc3c7" stroke-width="2"/>
+  
+  <!-- 剪刀左刀片 -->
+  <path d="M 35 25 L 35 55 L 28 62 L 35 69 L 35 85 L 42 78 L 50 70 L 58 62 L 50 54 L 50 40 L 42 32 Z" 
+        fill="url(#bladeGradient)" stroke="#1a252f" stroke-width="2" stroke-linejoin="round"/>
+  
+  <!-- 剪刀右刀片 -->
+  <path d="M 93 25 L 93 55 L 100 62 L 93 69 L 93 85 L 86 78 L 78 70 L 70 62 L 78 54 L 78 40 L 86 32 Z" 
+        fill="url(#bladeGradient)" stroke="#1a252f" stroke-width="2" stroke-linejoin="round"/>
+  
+  <!-- 剪刀连接点 -->
+  <circle cx="64" cy="62" r="6" fill="#34495e" stroke="#1a252f" stroke-width="2"/>
+  <circle cx="64" cy="62" r="3" fill="#2c3e50"/>
+  
+  <!-- 剪刀手柄左 -->
+  <ellipse cx="35" cy="95" rx="6" ry="10" fill="url(#handleGradient)" stroke="#1a252f" stroke-width="2"/>
+  <ellipse cx="35" cy="95" rx="3" ry="6" fill="#34495e" opacity="0.3"/>
+  
+  <!-- 剪刀手柄右 -->
+  <ellipse cx="93" cy="95" rx="6" ry="10" fill="url(#handleGradient)" stroke="#1a252f" stroke-width="2"/>
+  <ellipse cx="93" cy="95" rx="3" ry="6" fill="#34495e" opacity="0.3"/>
+</svg>
