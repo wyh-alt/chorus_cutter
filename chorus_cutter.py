@@ -958,7 +958,8 @@ class ChorusCutterGUI(QMainWindow):
             column_mapping = {
                 '伴奏ID': '伴奏ID',
                 'accompaniment_id': '伴奏ID',
-                'id': '伴奏ID',
+                'ID': '伴奏ID',  # 支持大写ID
+                'id': '伴奏ID',  # 支持小写id
                 '歌名': '歌名',
                 'song_name': '歌名',
                 'name': '歌名',
