@@ -20,10 +20,38 @@ import sys
 import os
 import re
 import shutil
+import subprocess
 from pathlib import Path
 from typing import Optional, List, Dict, Tuple
 from concurrent.futures import ThreadPoolExecutor, Future
 from datetime import datetime
+
+# ============================================================================
+# Windows 下隐藏 ffmpeg 控制台窗口
+# pydub 调用 ffmpeg 时会弹出终端框，需要 patch subprocess.Popen 来隐藏它
+# ============================================================================
+if sys.platform == 'win32':
+    # 保存原始的 Popen
+    _original_popen = subprocess.Popen
+    
+    # 创建一个全局的 STARTUPINFO 对象
+    _startupinfo = subprocess.STARTUPINFO()
+    _startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    _startupinfo.wShowWindow = subprocess.SW_HIDE
+    
+    def _popen_no_console(*args, **kwargs):
+        """
+        Wrapper for subprocess.Popen that hides console window on Windows.
+        This prevents ffmpeg from showing a console window every time it runs.
+        """
+        # 只设置 startupinfo，不设置 creationflags 以避免与 shell=True 冲突
+        if 'startupinfo' not in kwargs:
+            kwargs['startupinfo'] = _startupinfo
+        
+        return _original_popen(*args, **kwargs)
+    
+    # 替换 subprocess.Popen
+    subprocess.Popen = _popen_no_console
 
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
@@ -169,6 +197,29 @@ class AudioProcessor:
 
 class FileNameSanitizer:
     """文件名安全处理器"""
+    
+    @staticmethod
+    def normalize_path(path: str) -> str:
+        """
+        标准化路径格式，支持正斜杠和反斜杠
+        将 Z:/音编组/资源 转换为 Z:\音编组\资源 (Windows)
+        """
+        if not path:
+            return path
+        
+        # 去除首尾空格
+        path = path.strip()
+        
+        # 去除可能的引号
+        if (path.startswith('"') and path.endswith('"')) or \
+           (path.startswith("'") and path.endswith("'")):
+            path = path[1:-1]
+        
+        # 使用 os.path.normpath 来标准化路径分隔符
+        # 在 Windows 上会将 / 转换为 \
+        path = os.path.normpath(path)
+        
+        return path
     
     @staticmethod
     def sanitize(filename: str, max_length: int = 200) -> str:
@@ -853,6 +904,9 @@ class ChorusCutterGUI(QMainWindow):
         if not file_paths:
             return
         
+        # 标准化路径格式（支持正斜杠和反斜杠）
+        file_paths = [FileNameSanitizer.normalize_path(p) for p in file_paths]
+        
         # 取第一个文件/目录
         file_path = file_paths[0]
         
@@ -874,7 +928,8 @@ class ChorusCutterGUI(QMainWindow):
         if not file_paths:
             return
         
-        file_path = file_paths[0]
+        # 标准化路径格式
+        file_path = FileNameSanitizer.normalize_path(file_paths[0])
         
         if file_path.lower().endswith(('.xlsx', '.xls', '.csv')):
             self.excel_input.setText(file_path)
@@ -887,7 +942,8 @@ class ChorusCutterGUI(QMainWindow):
         if not file_paths:
             return
         
-        file_path = file_paths[0]
+        # 标准化路径格式
+        file_path = FileNameSanitizer.normalize_path(file_paths[0])
         
         if os.path.isdir(file_path):
             self.output_input.setText(file_path)
@@ -930,6 +986,9 @@ class ChorusCutterGUI(QMainWindow):
     
     def load_audio_from_directory(self, directory: str):
         """从目录加载音频文件"""
+        # 标准化路径格式
+        directory = FileNameSanitizer.normalize_path(directory)
+        
         audio_extensions = {'.mp3', '.wav', '.flac', '.m4a', '.ogg', '.wma', '.aac'}
         audio_files = []
         
@@ -948,6 +1007,9 @@ class ChorusCutterGUI(QMainWindow):
     
     def load_excel(self, file_path: str):
         """加载 Excel 文件"""
+        # 标准化路径格式
+        file_path = FileNameSanitizer.normalize_path(file_path)
+        
         try:
             if file_path.lower().endswith('.csv'):
                 df = pd.read_csv(file_path)
@@ -1172,6 +1234,9 @@ class ChorusCutterGUI(QMainWindow):
         if not output_dir:
             QMessageBox.warning(self, "警告", "请选择输出目录")
             return
+        
+        # 标准化路径格式（支持正斜杠和反斜杠）
+        output_dir = FileNameSanitizer.normalize_path(output_dir)
         
         if not os.path.exists(output_dir):
             try:
